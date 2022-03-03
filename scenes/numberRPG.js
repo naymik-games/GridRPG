@@ -22,7 +22,7 @@ class numberRPG extends Phaser.Scene {
     this.directions = [{ r: 0, c: 1 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: -1, c: 0 }];
     this.hasArrow = false;
     this.colors = {
-      bg: 0x5c4444,
+      bg: 0xfafafa,
       tileEmpty: 0x7f8c8d,
       tileNormal: 0x16a085,
       tileUpgrade: 0xe74c3c,
@@ -47,7 +47,7 @@ class numberRPG extends Phaser.Scene {
     this.cameras.main.fadeIn(800, 0, 0, 0);
     this.cameras.main.setBackgroundColor(this.colors.bg);
     this.cameras.main.setBounds(0, 0, this.xOffset + this.cols * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.rows * (this.tileSize + 15) + this.tileSize / 2);
-    this.cameras.main.setZoom(.5)
+    this.cameras.main.setZoom(1)
     //var title = this.add.bitmapText(50, 50, 'topaz', 'L: 1', 100).setOrigin(0,.5).setTint(0xc76210);
     this.tileSize = 150;
     this.xOffset = (game.config.width - (5 * (this.tileSize + 15) + this.tileSize / 2)) / 2;
@@ -208,28 +208,39 @@ class numberRPG extends Phaser.Scene {
   addPlayer() {
     console.log(this.player)
     this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
-    this.grid[this.player.location.r][this.player.location.c].tileValue = this.player.strength;
-    this.grid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
-    this.grid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
-    this.grid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileNormal)
-    this.grid[this.player.location.r][this.player.location.c].isEmpty = false;
-    this.grid[this.player.location.r][this.player.location.c].name = '';
-    this.grid[this.player.location.r][this.player.location.c].strength = 0;
+    
+    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
+    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
+    this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileNormal).setAlpha(1)
+    this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = false;
+    
+    
   }
   removePlayer() {
 
-    this.grid[this.player.location.r][this.player.location.c].tileValue = 0;
-    this.grid[this.player.location.r][this.player.location.c].tileText.setText('')
-    this.grid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
-    this.grid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileEmpty)
-    this.grid[this.player.location.r][this.player.location.c].isEmpty = true;
-    this.grid[this.player.location.r][this.player.location.c].name = '';
-    this.grid[this.player.location.r][this.player.location.c].strength = 0;
+    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText('')
+    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
+    this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileEmpty).setAlpha(0)
+    this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = true;
+    
+   
+  }
+  removeTile(row, col) {
+
+    this.grid[row][col].tileValue = 0;
+    this.grid[row][col].tileText.setText('')
+    this.grid[row][col].tileText.setTint(this.colors.tileNormal)
+    this.grid[row][col].tileSprite.setTint(this.colors.tileEmpty)
+    this.grid[row][col].isEmpty = true;
+    this.grid[row][col].name = '';
+    this.grid[row][col].strength = 0;
   }
   createGrid() {
    
 	this.g = new Grid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
     this.grid = this.g.createGrid();
+    this.pg = new playerGrid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
+    this.playerGrid = this.pg.createGrid();
     this.addFeature()
    /* this.upgradeMax = numberRPGData.upgradeMax;
     //this.fieldArray = [];
@@ -427,7 +438,9 @@ class numberRPG extends Phaser.Scene {
         this.player.strength -= 1;
         this.updateStats();
       }
-      this.checkCollectable(playerTileNew);
+      if(this.checkCollectable(playerTileNew)){
+        this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
+      }
       if (this.checkEnemy(playerTileNew)) {
         this.doBattle(playerTile, playerTileNew, deltaRow, deltaCol)
         return
@@ -468,35 +481,44 @@ class numberRPG extends Phaser.Scene {
       this.player.magic += 5;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '@')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Coin') {
       this.player.coins += 1;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '$')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Health') {
       this.player.health += 1;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '#')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Sword') {
       this.player.strength += 1;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Sheild') {
       this.player.protection += 1;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Arrow') {
       this.player.strength += 1;
       UIS.playerArrowText.setVisible(true)
       this.hasArrow = true;
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Key') {
       this.addDoor()
       this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, 'K')
       this.updateStats();
+      return true;
     } else if (tile.name == 'Door') {
       alert('level complete')
       this.nextLevel()
+    } else {
+      return false
     }
   }
   checkEnemy(tile) {
@@ -551,6 +573,7 @@ class numberRPG extends Phaser.Scene {
           this.currentRoll--;
           this.nextNum.setText(this.currentRoll)
           this.removePlayer()
+          this.removeTile( this.player.location.r + deltaRow, this.player.location.c + deltaCol)
           this.player.location.r += deltaRow;
           this.player.location.c += deltaCol;
           this.addPlayer()

@@ -20,16 +20,16 @@ class Grid {
         var tileXPos = this.xOffset + j * (this.tileSize + 15) + this.tileSize / 2;
         var tileYPos = this.yOffset + i * (this.tileSize + 15) + this.tileSize / 2;
 
-        var one = this.scene.add.sprite(tileXPos, tileYPos, 'blank').setTint(this.scene.colors.tileEmpty).setAlpha(0);
-        one.displayWidth = 120;
-        one.displayHeight = 120;
+        var one = this.scene.add.sprite(tileXPos, tileYPos, 'items', 1).setAlpha(0);
+        one.displayWidth = 100;
+        one.displayHeight = 100;
         
         var two = this.scene.add.sprite(tileXPos, tileYPos, 'blankoutline').setTint(this.scene.colors.tileEmpty);
         two.displayWidth = 140;
         two.displayHeight = 140;
         
 		//this.scene.add.existing(two);
-        var tileText = this.scene.add.bitmapText(tileXPos, tileYPos, 'topaz', '', 100).setOrigin(.5).setTint(this.scene.colors.tileNormal);
+        var tileText = this.scene.add.bitmapText(tileXPos + 35, tileYPos - 35, 'topaz', '', 40).setOrigin(.5).setTint(this.scene.colors.tileNormal);
         
 		//this.scene.add.existing(tileText);
         this.grid[i][j] = {
@@ -72,22 +72,23 @@ class playerGrid {
         var tileXPos = this.xOffset + j * (this.tileSize + 15) + this.tileSize / 2;
         var tileYPos = this.yOffset + i * (this.tileSize + 15) + this.tileSize / 2;
 
-        // var one = this.scene.add.sprite(tileXPos, tileYPos, 'blank').setTint(this.scene.colors.tileEmpty).setAlpha(0);
-        // one.displayWidth = 120;
-        // one.displayHeight = 120;
+         var one = this.scene.add.sprite(tileXPos, tileYPos, 'player', 0).setTint(this.scene.colors.tileNormal).setAlpha(0);
+         one.displayWidth = 120;
+         one.displayHeight = 120;
         
         var two = this.scene.add.sprite(tileXPos, tileYPos, 'blankoutline').setTint(this.scene.colors.tileEmpty).setAlpha(0);
         two.displayWidth = 140;
         two.displayHeight = 140;
         
 		//this.scene.add.existing(two);
-        var tileText = this.scene.add.bitmapText(tileXPos, tileYPos, 'topaz', '', 100).setOrigin(.5).setTint(this.scene.colors.tileNormal);
+        var tileText = this.scene.add.bitmapText(tileXPos + 35, tileYPos - 35, 'topaz', '', 40).setOrigin(.5).setTint(this.scene.colors.tileNormal);
         
 		//this.scene.add.existing(tileText);
         this.grid[i][j] = {
         
           tileText: tileText,
           tileSprite: two,
+          tileBack: one,
           isEmpty: true,
           
         }

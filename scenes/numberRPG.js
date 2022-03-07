@@ -22,7 +22,7 @@ class numberRPG extends Phaser.Scene {
     this.directions = [{ r: 0, c: 1 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: -1, c: 0 }];
     this.hasArrow = false;
     this.colors = {
-      bg: 0xfafafa,
+      bg: 0x000000,
       tileEmpty: 0x7f8c8d,
       tileNormal: 0x16a085,
       tileUpgrade: 0xe74c3c,
@@ -47,7 +47,7 @@ class numberRPG extends Phaser.Scene {
     this.cameras.main.fadeIn(800, 0, 0, 0);
     this.cameras.main.setBackgroundColor(this.colors.bg);
     this.cameras.main.setBounds(0, 0, this.xOffset + this.cols * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.rows * (this.tileSize + 15) + this.tileSize / 2);
-    this.cameras.main.setZoom(1)
+    this.cameras.main.setZoom(.5)
     //var title = this.add.bitmapText(50, 50, 'topaz', 'L: 1', 100).setOrigin(0,.5).setTint(0xc76210);
     this.tileSize = 150;
     this.xOffset = (game.config.width - (5 * (this.tileSize + 15) + this.tileSize / 2)) / 2;
@@ -157,6 +157,7 @@ class numberRPG extends Phaser.Scene {
        tile.isEmpty = true
        tile.tileValue = 0;
        tile.tileText.setText('');
+       tile.tileBack.setAlpha(0);
        tile.tileText.setTint(this.colors.tileEmpty);
        tile.tileSprite.setTint(this.colors.tileEmpty);
 
@@ -212,6 +213,7 @@ class numberRPG extends Phaser.Scene {
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
     this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileNormal).setAlpha(1)
+    this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(1)
     this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = false;
     
     
@@ -220,6 +222,7 @@ class numberRPG extends Phaser.Scene {
 
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText('')
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
+    this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(0)
     this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileEmpty).setAlpha(0)
     this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = true;
     
@@ -231,6 +234,7 @@ class numberRPG extends Phaser.Scene {
     this.grid[row][col].tileText.setText('')
     this.grid[row][col].tileText.setTint(this.colors.tileNormal)
     this.grid[row][col].tileSprite.setTint(this.colors.tileEmpty)
+    this.grid[row][col].tileBack.setAlpha(0)
     this.grid[row][col].isEmpty = true;
     this.grid[row][col].name = '';
     this.grid[row][col].strength = 0;
@@ -302,7 +306,7 @@ class numberRPG extends Phaser.Scene {
       //this.grid[tiles[i].r][tiles[i].c].tileSprite.setTint(this.colors.tileTree)
       this.grid[tiles[i].r][tiles[i].c].tileValue = 0;
       this.grid[tiles[i].r][tiles[i].c].tileText.setText('')
-      this.grid[tiles[i].r][tiles[i].c].tileBack.setTint(this.colors.tileTree).setAlpha(.8)
+      this.grid[tiles[i].r][tiles[i].c].tileBack.setFrame(84).setAlpha(.8)
       //this.grid[tiles[i].r][tiles[i].c].tileText.setTint(card.color)
       this.grid[tiles[i].r][tiles[i].c].isEmpty = false;
       this.grid[tiles[i].r][tiles[i].c].name = 'forest';
@@ -339,7 +343,7 @@ class numberRPG extends Phaser.Scene {
       this.grid[coo.r][coo.c].tileValue = card.id;
       this.grid[coo.r][coo.c].tileText.setText(card.text)
      this.grid[coo.r][coo.c].tileSprite.setTint(card.color)
-       
+     this.grid[coo.r][coo.c].tileBack.setFrame(card.index).setAlpha(1)
       this.grid[coo.r][coo.c].tileText.setTint(card.color)
       this.grid[coo.r][coo.c].isEmpty = false;
       this.grid[coo.r][coo.c].name = card.name;
@@ -354,6 +358,7 @@ class numberRPG extends Phaser.Scene {
     this.grid[coo.r][coo.c].tileValue = -1;
     this.grid[coo.r][coo.c].tileText.setText('[]')
     this.grid[coo.r][coo.c].tileSprite.setTint(this.colors.tileKey)
+    this.grid[coo.r][coo.c].tileBack.setFrame(15).setAlpha(1)
     this.grid[coo.r][coo.c].tileText.setTint(this.colors.tileKey)
     this.grid[coo.r][coo.c].isEmpty = false;
     this.grid[coo.r][coo.c].name = 'Door';
@@ -383,6 +388,7 @@ class numberRPG extends Phaser.Scene {
         this.grid[i][j].name = '',
           this.grid[i][j].tileSprite.setTint(this.colors.tileEmpty)
         this.grid[i][j].tileText.setText('')
+        this.grid[i][j].tileBack.setAlpha(0)
       }
     }
 
@@ -605,28 +611,28 @@ class numberRPG extends Phaser.Scene {
   }
   makeDeck() {
     this.deck = [
-      { name: 'Wall', text: 'X', id: 0, color: this.colors.tileWall, strength: 0 },
-      { name: 'Potion', text: '@', id: 1, color: this.colors.tilePotion, strength: 0 },
-      { name: 'Sword', text: '|', id: 2, color: this.colors.tileSword, strength: 0 },
-      { name: 'Sheild', text: '()', id: 3, color: this.colors.tileSheild, strength: 0 },
-      { name: 'Enemy 1', text: '3', id: 4, color: this.colors.tileEnemy1, strength: 3 },
-      { name: 'Tree', text: 'T', id: 6, color: this.colors.tileTree, strength: 0 },
-      { name: 'Arrow', text: '}->', id: 7, color: this.colors.tileArrow, strength: 0 },
-      { name: 'Tree', text: 'T', id: 8, color: this.colors.tileTree, strength: 0 },
-      { name: 'Enemy 2', text: '5', id: 9, color: this.colors.tileEnemy2, strength: 5 },
-      { name: 'Enemy 3', text: '7', id: 10, color: this.colors.tileEnemy3, strength: 7 },
-      { name: 'Enemy 4', text: '9', id: 11, color: this.colors.tileEnemy4, strength: 9 },
-      { name: 'Enemy 1', text: '3', id: 12, color: this.colors.tileEnemy1, strength: 3 },
-      { name: 'Enemy 1', text: '3', id: 13, color: this.colors.tileEnemy1, strength: 3 },
-      { name: 'Wall', text: 'X', id: 14, color: this.colors.tileWall, strength: 0 },
-      { name: 'Potion', text: '@', id: 15, color: this.colors.tilePotion, strength: 0 },
-      { name: 'Sword', text: '|', id: 16, color: this.colors.tileSword, strength: 0 },
-      { name: 'Key', text: 'K', id: 17, color: this.colors.tileKey, strength: 0 },
-      { name: 'Wall', text: 'X', id: 18, color: this.colors.tileWall, strength: 0 },
-      { name: 'Wall', text: 'X', id: 19, color: this.colors.tileWall, strength: 0 },
-      { name: 'Health', text: '#', id: 20, color: this.colors.tileHealth, strength: 0 },
-      { name: 'Coin', text: '$', id: 21, color: this.colors.tileCoin, strength: 0 },
-      { name: 'Coin', text: '$', id: 22, color: this.colors.tileCoin, strength: 0 },
+      { name: 'Wall', text: 'X', id: 0, color: this.colors.tileWall, strength: 0, index: 128 },
+      { name: 'Potion', text: '@', id: 1, color: this.colors.tilePotion, strength: 0, index: 354 },
+      { name: 'Sword', text: '|', id: 2, color: this.colors.tileSword, strength: 0, index: 301 },
+      { name: 'Sheild', text: '()', id: 3, color: this.colors.tileSheild, strength: 0, index: 362 },
+      { name: 'Enemy 1', text: '3', id: 4, color: this.colors.tileEnemy1, strength: 3, index: 160 },
+      { name: 'Tree', text: 'T', id: 6, color: this.colors.tileTree, strength: 0, index: 84 },
+      { name: 'Arrow', text: '}->', id: 7, color: this.colors.tileArrow, strength: 0, index: 323 },
+      { name: 'Tree', text: 'T', id: 8, color: this.colors.tileTree, strength: 0, index: 84 },
+      { name: 'Enemy 2', text: '5', id: 9, color: this.colors.tileEnemy2, strength: 5, index: 161 },
+      { name: 'Enemy 3', text: '7', id: 10, color: this.colors.tileEnemy3, strength: 7, index: 162 },
+      { name: 'Enemy 4', text: '9', id: 11, color: this.colors.tileEnemy4, strength: 9, index: 163 },
+      { name: 'Enemy 1', text: '3', id: 12, color: this.colors.tileEnemy1, strength: 3, index: 160 },
+      { name: 'Enemy 1', text: '3', id: 13, color: this.colors.tileEnemy1, strength: 3, index: 160 },
+      { name: 'Wall', text: 'X', id: 14, color: this.colors.tileWall, strength: 0, index: 128 },
+      { name: 'Potion', text: '@', id: 15, color: this.colors.tilePotion, strength: 0, index: 354 },
+      { name: 'Sword', text: '|', id: 16, color: this.colors.tileSword, strength: 0, index: 301 },
+      { name: 'Key', text: 'K', id: 17, color: this.colors.tileKey, strength: 0, index: 342 },
+      { name: 'Wall', text: 'X', id: 18, color: this.colors.tileWall, strength: 0, index: 128 },
+      { name: 'Wall', text: 'X', id: 19, color: this.colors.tileWall, strength: 0, index: 128 },
+      { name: 'Health', text: '#', id: 20, color: this.colors.tileHealth, strength: 0, index: 358 },
+      { name: 'Coin', text: '$', id: 21, color: this.colors.tileCoin, strength: 0, index: 348 },
+      { name: 'Coin', text: '$', id: 22, color: this.colors.tileCoin, strength: 0, index: 348 },
     ]
     Phaser.Utils.Array.Shuffle(this.deck)
 

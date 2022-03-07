@@ -12,7 +12,9 @@ window.onload = function() {
       width: 900,
       height: 1640
     },
-
+    render: {
+      pixelArt: true
+    },
     scene: [preloadGame, startGame, playGame, numberRPG, UI]
   }
   game = new Phaser.Game(gameConfig);

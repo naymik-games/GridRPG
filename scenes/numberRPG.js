@@ -47,7 +47,7 @@ class numberRPG extends Phaser.Scene {
     this.cameras.main.fadeIn(800, 0, 0, 0);
     this.cameras.main.setBackgroundColor(this.colors.bg);
     this.cameras.main.setBounds(0, 0, this.xOffset + this.cols * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.rows * (this.tileSize + 15) + this.tileSize / 2);
-    this.cameras.main.setZoom(.5)
+    this.cameras.main.setZoom(1)
     //var title = this.add.bitmapText(50, 50, 'topaz', 'L: 1', 100).setOrigin(0,.5).setTint(0xc76210);
     this.tileSize = 150;
     this.xOffset = (game.config.width - (5 * (this.tileSize + 15) + this.tileSize / 2)) / 2;
@@ -190,6 +190,7 @@ class numberRPG extends Phaser.Scene {
     tile.tileText
   }
   roll() {
+    this.moveEnemies()
     var num = Phaser.Math.Between(4, this.range)
     this.currentRoll = num;
     this.tweens.add({
@@ -238,6 +239,52 @@ class numberRPG extends Phaser.Scene {
     this.grid[row][col].isEmpty = true;
     this.grid[row][col].name = '';
     this.grid[row][col].strength = 0;
+  }
+  moveEnemies(){
+    var enemies = this.findEnemies();
+    if(enemies.length == 0){return}
+    for(var i = 0; i < enemies.length; i++){
+      var neighbors = this.getEmptyNeighbors(enemies[i])
+      if(neighbors.length > 0){
+        var rand = Phaser.Math.Between(0, neighbors.length - 1)
+        
+      }
+    }
+  }
+  getEmptyNeighbors(point){
+    var n = []
+    if(point.r - 1 > -1){
+      if(this.grid[point.r -1][point.c].isEmpty){
+        n.push({r: point.r - 1, c: point.c})
+      }
+    }
+    if (point.r + 1 < this.rows) {
+      if (this.grid[point.r + 1][point.c].isEmpty) {
+        n.push({ r: point.r + 1, c: point.c })
+      }
+    }
+    if (point.c - 1 > -1) {
+      if (this.grid[point.r][point.c - 1].isEmpty) {
+        n.push({ r: point.r, c: point.c - 1})
+      }
+    }
+    if (point.c + 1 < this.cols) {
+      if (this.grid[point.r][point.c + 1].isEmpty) {
+        n.push({ r: point.r, c: point.c + 1 })
+      }
+    }
+    return n
+  }
+  findEnemies(){
+    var enm = []
+    for(var r = 0; r < this.rows;r++){
+      for(var c = 0; c < this.cols;c++){
+        if(this.grid[r][c].name == 'Enemy 1' || this.grid[r][c].name == 'Enemy 2' || this.grid[r][c].name == 'Enemy 3' || this.grid[r][c].name == 'Enemy 4'){
+          enm.push({r: r, c: c})
+        }
+      }
+    }
+    return enm
   }
   createGrid() {
    

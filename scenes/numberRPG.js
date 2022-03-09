@@ -208,7 +208,7 @@ class numberRPG extends Phaser.Scene {
     this.events.emit('updateStats')
   }
   addPlayer() {
-    console.log(this.player)
+    //console.log(this.player)
     this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
     
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
@@ -247,7 +247,20 @@ class numberRPG extends Phaser.Scene {
       var neighbors = this.getEmptyNeighbors(enemies[i])
       if(neighbors.length > 0){
         var rand = Phaser.Math.Between(0, neighbors.length - 1)
+        //to tile
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileValue = this.grid[enemies[i].r][enemies[i].c].tileValue
+        console.log(this.grid[enemies[i].r][enemies[i].c].strength)
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setText(this.grid[enemies[i].r][enemies[i].c].strength)
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setTint(this.colors.tileEnemy1)
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileSprite.setTint(this.colors.tileEnemy1)
         
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileBack.setFrame(this.grid[enemies[i].r][enemies[i].c].backFrame).setAlpha(1)
+        this.grid[neighbors[rand].r][neighbors[rand].c].isEmpty = false;
+        this.grid[neighbors[rand].r][neighbors[rand].c].name = this.grid[enemies[i].r][enemies[i].c].name
+        this.grid[neighbors[rand].r][neighbors[rand].c].strength = this.grid[enemies[i].r][enemies[i].c].strength
+
+        this.removeTile(enemies[i].r, enemies[i].c)
+
       }
     }
   }
@@ -292,7 +305,7 @@ class numberRPG extends Phaser.Scene {
     this.grid = this.g.createGrid();
     this.pg = new playerGrid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
     this.playerGrid = this.pg.createGrid();
-    this.addFeature()
+    //this.addFeature()
    /* this.upgradeMax = numberRPGData.upgradeMax;
     //this.fieldArray = [];
     // this.fieldGroup = this.add.group();
@@ -348,7 +361,7 @@ class numberRPG extends Phaser.Scene {
   while(tiles.length == 0)
   
 	if(tiles.length > 0){
-    console.log(tiles)
+    //console.log(tiles)
 		for(var i = 0; i < tiles.length; i++){
       //this.grid[tiles[i].r][tiles[i].c].tileSprite.setTint(this.colors.tileTree)
       this.grid[tiles[i].r][tiles[i].c].tileValue = 0;
@@ -358,6 +371,7 @@ class numberRPG extends Phaser.Scene {
       this.grid[tiles[i].r][tiles[i].c].isEmpty = false;
       this.grid[tiles[i].r][tiles[i].c].name = 'forest';
       this.grid[tiles[i].r][tiles[i].c].strength = 0;
+
 
 
 
@@ -395,10 +409,11 @@ class numberRPG extends Phaser.Scene {
       this.grid[coo.r][coo.c].isEmpty = false;
       this.grid[coo.r][coo.c].name = card.name;
       this.grid[coo.r][coo.c].strength = card.strength;
+      this.grid[coo.r][coo.c].backFrame = card.index;
       //this.grid[index].tileSprite.setTint(0x111111)
       added++;
     }
-    console.log('tiles: ' + added)
+    //console.log('tiles: ' + added)
   }
   addDoor() {
     let coo = this.getEmptySpace();
@@ -457,19 +472,19 @@ class numberRPG extends Phaser.Scene {
     if (swipeMagnitude > 20 && swipeTime < 1000 && (Math.abs(swipeNormal.y) > 0.8 || Math.abs(swipeNormal.x) > 0.8)) {
 
       if (swipeNormal.x > 0.8) {
-        console.log('right')
+        //console.log('right')
         this.handleMove(0, 1, );
       }
       if (swipeNormal.x < -0.8) {
-        console.log('left')
+        //console.log('left')
         this.handleMove(0, -1);
       }
       if (swipeNormal.y > 0.8) {
-        console.log('down')
+       // console.log('down')
         this.handleMove(1, 0);
       }
       if (swipeNormal.y < -0.8) {
-        console.log('up')
+       // console.log('up')
         this.handleMove(-1, 0);
       }
     }
@@ -608,7 +623,7 @@ class numberRPG extends Phaser.Scene {
       onCompleteScope: this,
       onComplete: function() {
         var chance;
-        console.log('ps' + this.player.strength + ' es' + enemy.strength)
+        //console.log('ps' + this.player.strength + ' es' + enemy.strength)
         if(this.player.strength > enemy.strength){
           chance = 50 - (this.player.strength - enemy.strength)
         } else if(this.player.strength < enemy.strength) {

@@ -40,14 +40,15 @@ class numberRPG extends Phaser.Scene {
       tileKey: 0xf48834,
       tileHealth: 0x16a085,
       tileCoin: 0xf2e711,
-      uiText: 0xecf0f1
+      uiText: 0xecf0f1,
+      tileWizard: 0xffffff
     }
     UIS = this.scene.get('UI');
 
     this.cameras.main.fadeIn(800, 0, 0, 0);
     this.cameras.main.setBackgroundColor(this.colors.bg);
     this.cameras.main.setBounds(0, 0, this.xOffset + this.cols * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.rows * (this.tileSize + 15) + this.tileSize / 2);
-    this.cameras.main.setZoom(1)
+    this.cameras.main.setZoom(.5)
     //var title = this.add.bitmapText(50, 50, 'topaz', 'L: 1', 100).setOrigin(0,.5).setTint(0xc76210);
     this.tileSize = 150;
     this.xOffset = (game.config.width - (5 * (this.tileSize + 15) + this.tileSize / 2)) / 2;
@@ -88,21 +89,14 @@ class numberRPG extends Phaser.Scene {
 
     //create game board and player
     this.createGrid();
-    // console.log(this.grid[5][5])
+   
     //invisiable object that moves with player for the camerea to follow
     this.playerSprite = this.add.image(0, 0, 'blankoutline').setVisible(false);
     this.cameras.main.startFollow(this.playerSprite, true, .1, .1);
+    var ps = this.getEmptySpace()
+    this.player = new Player(this, ps)
     
-    this.player = {
-      location: { r: 2, c: 2 },
-      health: 10,
-      strength: 5,
-      magic: 0,
-      protection: 5,
-      coins: 0,
-      inventory: null
-    }
-    this.addPlayer();
+    this.player.addPlayer();
 
     //add objects to the game board
     this.addTiles(5);
@@ -122,6 +116,47 @@ class numberRPG extends Phaser.Scene {
   update() {
     this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
 
+  }
+  nextLevel() {
+    this.player.removePlayer();
+    //clear board
+    this.clearGrid()
+    this.makeDeck();
+    this.growMountains(9)
+    this.growMountains(7)
+    this.addTiles(6);
+    //shuffle deck
+    //add tiles
+  }
+  roll() {
+
+    var num = Phaser.Math.Between(4, this.range)
+    //this.moveEnemies(num)
+    this.currentRoll = num;
+    this.tweens.add({
+      targets: [this.nextSlot, this.nextNum],
+      angle: 360,
+      yoyo: true,
+      duration: 500,
+      onCompleteScope: this,
+      onComplete: function() {
+        this.nextNum.setText(num)
+      }
+    })
+  }
+  updateStats() {
+    this.events.emit('updateStats')
+  }
+  addNumberPopUp(x, y, text) {
+    this.popUpText.setText('+' + text);
+    this.popUpText.setPosition(x, y);
+    this.popUpText.setAlpha(1);
+    var tween = this.tweens.add({
+      targets: this.popUpText,
+      y: '-=500',
+      alpha: 0,
+      duration: 1000
+    })
   }
   cast() {
     this.tweens.add({
@@ -168,67 +203,14 @@ class numberRPG extends Phaser.Scene {
     }
 
   }
-  getValid4neighbors() {
-    var neigh = []
-    for (var d = 0; d < 4; d++) {
-
-      if (this.inGrid(this.player.location.r + this.directions[d].r, this.player.location.c + this.directions[d].c)) {
-        neigh.push({ r: this.player.location.r + this.directions[d].r, c: this.player.location.c + this.directions[d].c })
-      }
-    }
-    return neigh
-  }
-  inGrid(row, col) {
-    if (row == this.rows || row < 0 || col == this.cols || col < 0) {
-      return false
-    }
-    return true
-  }
+  
   removeTile(row, col) {
     var tile = this.grid[row][col]
     tile.tileText
   }
-  roll() {
 
-    var num = Phaser.Math.Between(4, this.range)
-    this.moveEnemies(num)
-    this.currentRoll = num;
-    this.tweens.add({
-      targets: [this.nextSlot, this.nextNum],
-      angle: 360,
-      yoyo: true,
-      duration: 500,
-      onCompleteScope: this,
-      onComplete: function() {
-        this.nextNum.setText(num)
-      }
-    })
-  }
-  updateStats() {
-    this.events.emit('updateStats')
-  }
-  addPlayer() {
-    //console.log(this.player)
-    this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
+ 
 
-    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
-    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
-    this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileNormal).setAlpha(1)
-    this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(1)
-    this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = false;
-
-
-  }
-  removePlayer() {
-
-    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText('')
-    this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
-    this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(0)
-    this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileEmpty).setAlpha(0)
-    this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = true;
-
-
-  }
   removeTile(row, col) {
 
     this.grid[row][col].tileValue = 0;
@@ -286,12 +268,14 @@ class numberRPG extends Phaser.Scene {
           this.grid[neighbors[rand].r][neighbors[rand].c].strength = this.grid[enemies[i].r][enemies[i].c].strength
 
           this.removeTile(enemies[i].r, enemies[i].c)
-          if(neighbors[rand.r] == this.player.location.r && neighbors[rand].c == this.player.location.c){
+          if(neighbors[rand].r == this.player.location.r && neighbors[rand].c == this.player.location.c){
+            console.log('BAM')
             var tween = this.tweens.add({
               targets: this.playerGrid[this.player.location.r][this.player.location.c].tileBack,
               scale: 2,
+              alpha: 0,
               yoyo: true,
-              duration: 200
+              duration: 750
             })
           }
         }
@@ -300,30 +284,7 @@ class numberRPG extends Phaser.Scene {
     }
 
   }
-  getEmptyNeighbors(point) {
-    var n = []
-    if (point.r - 1 > -1) {
-      if (this.grid[point.r - 1][point.c].isEmpty) {
-        n.push({ r: point.r - 1, c: point.c })
-      }
-    }
-    if (point.r + 1 < this.rows) {
-      if (this.grid[point.r + 1][point.c].isEmpty) {
-        n.push({ r: point.r + 1, c: point.c })
-      }
-    }
-    if (point.c - 1 > -1) {
-      if (this.grid[point.r][point.c - 1].isEmpty) {
-        n.push({ r: point.r, c: point.c - 1 })
-      }
-    }
-    if (point.c + 1 < this.cols) {
-      if (this.grid[point.r][point.c + 1].isEmpty) {
-        n.push({ r: point.r, c: point.c + 1 })
-      }
-    }
-    return n
-  }
+  
   findEnemies() {
     var enm = []
     for (var r = 0; r < this.rows; r++) {
@@ -335,6 +296,219 @@ class numberRPG extends Phaser.Scene {
     }
     return enm
   }
+  
+  /////////////////////////////////////////////////////
+  //
+  // movement and collision
+  //
+  ////////////////////////////////////////////////////
+  
+  endSwipe(e) {
+    var swipeTime = e.upTime - e.downTime;
+    var swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY);
+    var swipeMagnitude = Phaser.Geom.Point.GetMagnitude(swipe);
+    var swipeNormal = new Phaser.Geom.Point(swipe.x / swipeMagnitude, swipe.y / swipeMagnitude);
+    if (swipeMagnitude > 20 && swipeTime < 1000 && (Math.abs(swipeNormal.y) > 0.8 || Math.abs(swipeNormal.x) > 0.8)) {
+
+      if (swipeNormal.x > 0.8) {
+        //console.log('right')
+        this.handleMove(0, 1, );
+      }
+      if (swipeNormal.x < -0.8) {
+        //console.log('left')
+        this.handleMove(0, -1);
+      }
+      if (swipeNormal.y > 0.8) {
+        // console.log('down')
+        this.handleMove(1, 0);
+      }
+      if (swipeNormal.y < -0.8) {
+        // console.log('up')
+        this.handleMove(-1, 0);
+      }
+    }
+  }
+  handleMove(deltaRow, deltaCol) {
+
+    if (this.player.location.r + deltaRow == this.rows || this.player.location.r + deltaRow < 0 || this.player.location.c + deltaCol == this.cols || this.player.location.c + deltaCol < 0) { return }
+    if (this.currentRoll > 0) {
+
+
+
+      var playerTile = this.grid[this.player.location.r][this.player.location.c]
+      var playerTileNew = this.grid[this.player.location.r + deltaRow][this.player.location.c + deltaCol]
+     var mess = playerTileNew.name
+      this.events.emit('setMessage', mess)
+      if (this.checkBlock(playerTileNew)) { return }
+      if (this.hasArrow) {
+        this.hasArrow = false;
+        UIS.playerArrowText.setVisible(false)
+        this.player.strength -= 1;
+        this.updateStats();
+      }
+      if (this.checkCollectable(playerTileNew)) {
+        this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
+      }
+      if (this.checkEnemy(playerTileNew)) {
+        this.doBattle(playerTile, playerTileNew, deltaRow, deltaCol)
+        return
+
+      }
+      this.tweens.add({
+        targets: [playerTile.tileSprite, playerTile.tileText],
+        x: playerTile.tileSprite.x + (deltaCol * 50),
+        y: playerTile.tileSprite.y + (deltaRow * 50),
+        yoyo: true,
+        duration: 100,
+        onCompleteScope: this,
+        onComplete: function() {
+
+          this.currentRoll--;
+          this.nextNum.setText(this.currentRoll)
+          if (this.currentRoll == 0) {
+            this.addTiles(Phaser.Math.Between(0, 3))
+            this.moveEnemies(Phaser.Math.Between(0,9))
+          }
+        }
+      })
+
+
+      this.player.removePlayer()
+      this.player.location.r += deltaRow;
+      this.player.location.c += deltaCol;
+      this.player.addPlayer()
+      //console.log(this.player.location)
+    }
+  }
+  checkBlock(tile) {
+    if (tile.name == 'Wall' || tile.name == 'Tree') { // || tile.name == 'forest'
+      return true
+    }
+  }
+  checkCollectable(tile) {
+    if (tile.name == 'Potion') {
+      this.player.magic += 5;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '@')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Coin') {
+      this.player.coins += 1;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '$')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Health') {
+      this.player.health += 1;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '#')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Sword') {
+      this.player.strength += 1;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Sheild') {
+      this.player.protection += 1;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Arrow') {
+      this.player.strength += 1;
+      UIS.playerArrowText.setVisible(true)
+      this.hasArrow = true;
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Key') {
+      this.addDoor()
+      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, 'K')
+      this.updateStats();
+      return true;
+    } else if (tile.name == 'Door') {
+      alert('level complete')
+      this.nextLevel()
+    } else {
+      return false
+    }
+  }
+  checkEnemy(tile) {
+    if (tile.name == 'Enemy 1' || tile.name == 'Enemy 2' || tile.name == 'Enemy 3' || tile.name == 'Enemy 4') {
+      return true
+    }
+    return false
+  }
+  doBattle(player, enemy, deltaRow, deltaCol) {
+    //alert('battle')
+    this.tweens.add({
+      targets: [player.tileSprite, player.tileText],
+      x: player.tileSprite.x + (deltaCol * 50),
+      y: player.tileSprite.y + (deltaRow * 50),
+      yoyo: true,
+      duration: 100,
+      onCompleteScope: this,
+      onComplete: function() {
+
+        // this.currentRoll--;
+        //this.nextNum.setText(this.currentRoll)
+        // if (this.currentRoll == 0) {
+        //this.addTiles(Phaser.Math.Between(0, 3))
+        // }
+      }
+    })
+    this.tweens.add({
+      targets: [enemy.tileSprite, enemy.tileText],
+      x: enemy.tileSprite.x + (deltaCol * 50),
+      y: enemy.tileSprite.y + (deltaRow * 50),
+      yoyo: true,
+      duration: 100,
+      delay: 50,
+      onCompleteScope: this,
+      onComplete: function() {
+        var chance;
+        //console.log('ps' + this.player.strength + ' es' + enemy.strength)
+        if (this.player.strength > enemy.strength) {
+          chance = 50 - (this.player.strength - enemy.strength)
+        } else if (this.player.strength < enemy.strength) {
+          chance = 50 + (enemy.strength - this.player.strength)
+        } else {
+          chance = 50
+        }
+
+
+
+
+
+        if (Phaser.Math.Between(0, 100) > chance) {
+          // this.player.strength += 1;
+          this.currentRoll--;
+          this.nextNum.setText(this.currentRoll)
+          this.player.removePlayer()
+          this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
+          this.player.location.r += deltaRow;
+          this.player.location.c += deltaCol;
+          this.player.addPlayer()
+
+        } else {
+          this.player.health -= 1;
+
+        }
+        this.updateStats();
+        // this.currentRoll--;
+        //this.nextNum.setText(this.currentRoll)
+        // if (this.currentRoll == 0) {
+        //this.addTiles(Phaser.Math.Between(0, 3))
+        // }
+      }
+    })
+
+  }
+  checkInteraction(){
+    
+  }
+////////////////////////////////////////////////
+//
+/// Grid and tiles
+//
+///////////////////////////////////////////////
   createGrid() {
 
     this.g = new Grid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
@@ -344,52 +518,7 @@ class numberRPG extends Phaser.Scene {
     this.growMountains(9)
     this.growMountains(7)
     //this.addFeature()
-    /* this.upgradeMax = numberRPGData.upgradeMax;
-    //this.fieldArray = [];
-    // this.fieldGroup = this.add.group();
-    // console.log('saveval ' + gridGameData.grid[2][2].value)
-    for (var i = 0; i < this.rows; i++) {
-      this.grid[i] = [];
-      for (var j = 0; j < this.cols; j++) {
-
-        var tileXPos = this.xOffset + j * (this.tileSize + 15) + this.tileSize / 2;
-        var tileYPos = this.yOffset + i * (this.tileSize + 15) + this.tileSize / 2;
-        //var saveValue = numberRPGData.grid[i][j].value
-      //  var saveUp = numberRPGData.grid[i][j].upgrade
-
-        var two = this.add.sprite(tileXPos, tileYPos, 'blankoutline').setTint(this.colors.tileEmpty);
-        two.displayWidth = 140;
-        two.displayHeight = 140;
-
-        var tileText = this.add.bitmapText(tileXPos, tileYPos, 'topaz', '', 100).setOrigin(.5).setTint(this.colors.tileNormal);
-        if (saveValue > 0) {
-          tileText.setText(saveValue)
-          if (saveUp < this.upgradeMax) {
-            two.setTint(this.colors.tileNormal)
-          } else {
-            two.setTint(this.colors.tileUpgrade)
-            tileText.setTint(this.colors.tileUpgrade)
-          }
-        } else if (saveValue == -1) {
-          tileText.setText('X')
-          two.setTint(this.colors.tileX)
-          tileText.setTint(this.colors.tileX)
-        }
-        // two.alpha = 0;
-        //two.visible = 0;
-        //  this.fieldGroup.add(two);
-        this.grid[i][j] = {
-          tileValue: 0,
-          tileText: tileText,
-          tileSprite: two,
-          isEmpty: true,
-          canUpgrade: 0,
-          hasBonus: false,
-          name: '',
-        }
-      }
-    }
-	*/
+    
   }
   addFeature() {
     var forest = [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -495,252 +624,49 @@ class numberRPG extends Phaser.Scene {
     }
 
   }
-  nextLevel() {
-    this.removePlayer();
-    //clear board
-    this.clearGrid()
-    this.makeDeck();
-    this.growMountains(9)
-    this.growMountains(7)
-    this.addTiles(6);
-    //shuffle deck
-    //add tiles
-  }
-  endSwipe(e) {
-    var swipeTime = e.upTime - e.downTime;
-    var swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY);
-    var swipeMagnitude = Phaser.Geom.Point.GetMagnitude(swipe);
-    var swipeNormal = new Phaser.Geom.Point(swipe.x / swipeMagnitude, swipe.y / swipeMagnitude);
-    if (swipeMagnitude > 20 && swipeTime < 1000 && (Math.abs(swipeNormal.y) > 0.8 || Math.abs(swipeNormal.x) > 0.8)) {
+  getValid4neighbors() {
+    var neigh = []
+    for (var d = 0; d < 4; d++) {
 
-      if (swipeNormal.x > 0.8) {
-        //console.log('right')
-        this.handleMove(0, 1, );
-      }
-      if (swipeNormal.x < -0.8) {
-        //console.log('left')
-        this.handleMove(0, -1);
-      }
-      if (swipeNormal.y > 0.8) {
-        // console.log('down')
-        this.handleMove(1, 0);
-      }
-      if (swipeNormal.y < -0.8) {
-        // console.log('up')
-        this.handleMove(-1, 0);
+      if (this.inGrid(this.player.location.r + this.directions[d].r, this.player.location.c + this.directions[d].c)) {
+        neigh.push({ r: this.player.location.r + this.directions[d].r, c: this.player.location.c + this.directions[d].c })
       }
     }
+    return neigh
   }
-  handleMove(deltaRow, deltaCol) {
-
-    if (this.player.location.r + deltaRow == this.rows || this.player.location.r + deltaRow < 0 || this.player.location.c + deltaCol == this.cols || this.player.location.c + deltaCol < 0) { return }
-    if (this.currentRoll > 0) {
-
-
-
-      var playerTile = this.grid[this.player.location.r][this.player.location.c]
-      var playerTileNew = this.grid[this.player.location.r + deltaRow][this.player.location.c + deltaCol]
-     var mess = playerTileNew.name
-      this.events.emit('setMessage', mess)
-      if (this.checkBlock(playerTileNew)) { return }
-      if (this.hasArrow) {
-        this.hasArrow = false;
-        UIS.playerArrowText.setVisible(false)
-        this.player.strength -= 1;
-        this.updateStats();
+  getEmptyNeighbors(point) {
+    var n = []
+    if (point.r - 1 > -1) {
+      if (this.grid[point.r - 1][point.c].isEmpty) {
+        n.push({ r: point.r - 1, c: point.c })
       }
-      if (this.checkCollectable(playerTileNew)) {
-        this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
-      }
-      if (this.checkEnemy(playerTileNew)) {
-        this.doBattle(playerTile, playerTileNew, deltaRow, deltaCol)
-        return
-
-      }
-      this.tweens.add({
-        targets: [playerTile.tileSprite, playerTile.tileText],
-        x: playerTile.tileSprite.x + (deltaCol * 50),
-        y: playerTile.tileSprite.y + (deltaRow * 50),
-        yoyo: true,
-        duration: 100,
-        onCompleteScope: this,
-        onComplete: function() {
-
-          this.currentRoll--;
-          this.nextNum.setText(this.currentRoll)
-          if (this.currentRoll == 0) {
-            this.addTiles(Phaser.Math.Between(0, 3))
-          }
-        }
-      })
-
-
-      this.removePlayer()
-      this.player.location.r += deltaRow;
-      this.player.location.c += deltaCol;
-      this.addPlayer()
-      //console.log(this.player.location)
     }
-  }
-  checkBlock(tile) {
-    if (tile.name == 'Wall' || tile.name == 'Tree') { // || tile.name == 'forest'
-      return true
+    if (point.r + 1 < this.rows) {
+      if (this.grid[point.r + 1][point.c].isEmpty) {
+        n.push({ r: point.r + 1, c: point.c })
+      }
     }
+    if (point.c - 1 > -1) {
+      if (this.grid[point.r][point.c - 1].isEmpty) {
+        n.push({ r: point.r, c: point.c - 1 })
+      }
+    }
+    if (point.c + 1 < this.cols) {
+      if (this.grid[point.r][point.c + 1].isEmpty) {
+        n.push({ r: point.r, c: point.c + 1 })
+      }
+    }
+    return n
   }
-  checkCollectable(tile) {
-    if (tile.name == 'Potion') {
-      this.player.magic += 5;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '@')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Coin') {
-      this.player.coins += 1;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '$')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Health') {
-      this.player.health += 1;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '#')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Sword') {
-      this.player.strength += 1;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Sheild') {
-      this.player.protection += 1;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Arrow') {
-      this.player.strength += 1;
-      UIS.playerArrowText.setVisible(true)
-      this.hasArrow = true;
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, '1')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Key') {
-      this.addDoor()
-      this.addNumberPopUp(tile.tileSprite.x, tile.tileSprite.y, 'K')
-      this.updateStats();
-      return true;
-    } else if (tile.name == 'Door') {
-      alert('level complete')
-      this.nextLevel()
-    } else {
+  inGrid(row, col) {
+    if (row == this.rows || row < 0 || col == this.cols || col < 0) {
       return false
     }
-  }
-  checkEnemy(tile) {
-    if (tile.name == 'Enemy 1' || tile.name == 'Enemy 2' || tile.name == 'Enemy 3' || tile.name == 'Enemy 4') {
-      return true
-    }
-    return false
-  }
-  doBattle(player, enemy, deltaRow, deltaCol) {
-    //alert('battle')
-    this.tweens.add({
-      targets: [player.tileSprite, player.tileText],
-      x: player.tileSprite.x + (deltaCol * 50),
-      y: player.tileSprite.y + (deltaRow * 50),
-      yoyo: true,
-      duration: 100,
-      onCompleteScope: this,
-      onComplete: function() {
-
-        // this.currentRoll--;
-        //this.nextNum.setText(this.currentRoll)
-        // if (this.currentRoll == 0) {
-        //this.addTiles(Phaser.Math.Between(0, 3))
-        // }
-      }
-    })
-    this.tweens.add({
-      targets: [enemy.tileSprite, enemy.tileText],
-      x: enemy.tileSprite.x + (deltaCol * 50),
-      y: enemy.tileSprite.y + (deltaRow * 50),
-      yoyo: true,
-      duration: 100,
-      delay: 50,
-      onCompleteScope: this,
-      onComplete: function() {
-        var chance;
-        //console.log('ps' + this.player.strength + ' es' + enemy.strength)
-        if (this.player.strength > enemy.strength) {
-          chance = 50 - (this.player.strength - enemy.strength)
-        } else if (this.player.strength < enemy.strength) {
-          chance = 50 + (enemy.strength - this.player.strength)
-        } else {
-          chance = 50
-        }
-
-
-
-
-
-        if (Phaser.Math.Between(0, 100) > chance) {
-          // this.player.strength += 1;
-          this.currentRoll--;
-          this.nextNum.setText(this.currentRoll)
-          this.removePlayer()
-          this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
-          this.player.location.r += deltaRow;
-          this.player.location.c += deltaCol;
-          this.addPlayer()
-
-        } else {
-          this.player.health -= 1;
-
-        }
-        this.updateStats();
-        // this.currentRoll--;
-        //this.nextNum.setText(this.currentRoll)
-        // if (this.currentRoll == 0) {
-        //this.addTiles(Phaser.Math.Between(0, 3))
-        // }
-      }
-    })
-
-  }
-  addNumberPopUp(x, y, text) {
-    this.popUpText.setText('+' + text);
-    this.popUpText.setPosition(x, y);
-    this.popUpText.setAlpha(1);
-    var tween = this.tweens.add({
-      targets: this.popUpText,
-      y: '-=500',
-      alpha: 0,
-      duration: 1000
-    })
+    return true
   }
   makeDeck() {
-    this.deck = [
-      { name: 'Wall', text: 'X', id: 0, color: this.colors.tileWall, strength: 0, index: 128 },
-      { name: 'Potion', text: '@', id: 1, color: this.colors.tilePotion, strength: 0, index: 354 },
-      { name: 'Sword', text: '|', id: 2, color: this.colors.tileSword, strength: 0, index: 301 },
-      { name: 'Sheild', text: '()', id: 3, color: this.colors.tileSheild, strength: 0, index: 362 },
-      { name: 'Enemy 1', text: '3', id: 4, color: this.colors.tileEnemy1, strength: 3, index: 160 },
-      { name: 'Tree', text: 'T', id: 6, color: this.colors.tileTree, strength: 0, index: 84 },
-      { name: 'Arrow', text: '}->', id: 7, color: this.colors.tileArrow, strength: 0, index: 323 },
-      { name: 'Tree', text: 'T', id: 8, color: this.colors.tileTree, strength: 0, index: 84 },
-      { name: 'Enemy 2', text: '5', id: 9, color: this.colors.tileEnemy2, strength: 5, index: 161 },
-      { name: 'Enemy 3', text: '7', id: 10, color: this.colors.tileEnemy3, strength: 7, index: 162 },
-      { name: 'Enemy 4', text: '9', id: 11, color: this.colors.tileEnemy4, strength: 9, index: 163 },
-      { name: 'Enemy 1', text: '3', id: 12, color: this.colors.tileEnemy1, strength: 3, index: 160 },
-      { name: 'Enemy 1', text: '3', id: 13, color: this.colors.tileEnemy1, strength: 3, index: 160 },
-      { name: 'Wall', text: 'X', id: 14, color: this.colors.tileWall, strength: 0, index: 128 },
-      { name: 'Potion', text: '@', id: 15, color: this.colors.tilePotion, strength: 0, index: 354 },
-      { name: 'Sword', text: '|', id: 16, color: this.colors.tileSword, strength: 0, index: 301 },
-      { name: 'Key', text: 'K', id: 17, color: this.colors.tileKey, strength: 0, index: 342 },
-      { name: 'Wall', text: 'X', id: 18, color: this.colors.tileWall, strength: 0, index: 128 },
-      { name: 'Wall', text: 'X', id: 19, color: this.colors.tileWall, strength: 0, index: 128 },
-      { name: 'Health', text: '#', id: 20, color: this.colors.tileHealth, strength: 0, index: 358 },
-      { name: 'Coin', text: '$', id: 21, color: this.colors.tileCoin, strength: 0, index: 348 },
-      { name: 'Coin', text: '$', id: 22, color: this.colors.tileCoin, strength: 0, index: 348 },
-      { name: 'Wizzard', text: '', id: 22, color: this.colors.tileCoin, strength: 0, index: 144 },
-    
-    ]
+    this.d = new Deck(this)
+    this.deck = this.d.makeDeck()
     Phaser.Utils.Array.Shuffle(this.deck)
 
   }

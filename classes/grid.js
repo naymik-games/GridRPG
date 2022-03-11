@@ -40,7 +40,8 @@ class Grid {
           canUpgrade: 0,
           hasBonus: false,
           name: '',
-          tileBack: one
+          tileBack: one,
+          backFrame: 0
         }
       }
     }

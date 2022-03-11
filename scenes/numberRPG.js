@@ -42,8 +42,8 @@ class numberRPG extends Phaser.Scene {
       tileCoin: 0xf2e711,
       uiText: 0xecf0f1
     }
-	UIS = this.scene.get('UI');
-	
+    UIS = this.scene.get('UI');
+
     this.cameras.main.fadeIn(800, 0, 0, 0);
     this.cameras.main.setBackgroundColor(this.colors.bg);
     this.cameras.main.setBounds(0, 0, this.xOffset + this.cols * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.rows * (this.tileSize + 15) + this.tileSize / 2);
@@ -54,7 +54,7 @@ class numberRPG extends Phaser.Scene {
 
     this.yOffset = 450;
 
-	//roller
+    //roller
     this.nextSlot = this.add.image(this.xOffset + 2 * (this.tileSize + 15) + this.tileSize / 2, 250, 'blankoutline').setInteractive().setTint(0x16a085).setScrollFactor(0).setDepth(2);
     this.nextSlot.value = 5;
     this.nextSlot.displayWidth = 140;
@@ -80,20 +80,19 @@ class numberRPG extends Phaser.Scene {
       this.roll()
     }, this)
 
-	//message text
-    this.tileTypeText = this.add.bitmapText(15, 400, 'topaz', '', 60).setOrigin(0, .5).setTint(0xecf0f1).setScrollFactor(0);
 
-	
 
-	//create deck of "cards"
+
+    //create deck of "cards"
     this.makeDeck();
 
-	//create game board and player
+    //create game board and player
     this.createGrid();
-   // console.log(this.grid[5][5])
-	//invisiable object that moves with player for the camerea to follow
-    this.playerSprite = this.add.image(0,0, 'blankoutline').setVisible(false);
-	this.cameras.main.startFollow(this.playerSprite, true, .1,.1);
+    // console.log(this.grid[5][5])
+    //invisiable object that moves with player for the camerea to follow
+    this.playerSprite = this.add.image(0, 0, 'blankoutline').setVisible(false);
+    this.cameras.main.startFollow(this.playerSprite, true, .1, .1);
+    
     this.player = {
       location: { r: 2, c: 2 },
       health: 10,
@@ -104,37 +103,37 @@ class numberRPG extends Phaser.Scene {
       inventory: null
     }
     this.addPlayer();
-	
-	//add objects to the game board
+
+    //add objects to the game board
     this.addTiles(5);
-  
-  //this.shape = this.add.image(200, 200, 'blank').setVisible(false);
-  //this.mask = new Phaser.Display.Masks.BitmapMask(this, this.shape);
-  
+
+    //this.shape = this.add.image(200, 200, 'blank').setVisible(false);
+    //this.mask = new Phaser.Display.Masks.BitmapMask(this, this.shape);
 
 
-	//pop up collectable text
+
+    //pop up collectable text
     this.popUpText = this.add.bitmapText(-50, -50, 'topaz', '', 60).setOrigin(.5).setTint(0xecf0f1).setAlpha(0);
 
-	UIS.events.on('wallSpell', this.cast, this);
-	
+    UIS.events.on('wallSpell', this.cast, this);
+
     this.input.on('pointerup', this.endSwipe, this)
   }
-  update(){
+  update() {
     this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
 
   }
-  cast(){
-	 this.tweens.add({
-        targets: this.grid[this.player.location.r][this.player.location.c].tileSprite,
-        angle: 360,
-        yoyo: true,
-        duration: 500,
-        onCompleteScope: this,
-        onComplete: function() {
-          this.wallSpell();
-        }
-      }) 
+  cast() {
+    this.tweens.add({
+      targets: this.grid[this.player.location.r][this.player.location.c].tileSprite,
+      angle: 360,
+      yoyo: true,
+      duration: 500,
+      onCompleteScope: this,
+      onComplete: function() {
+        this.wallSpell();
+      }
+    })
   }
   wallSpell() {
     //var tileUp = this.grid[this.player.location.r - 1][this.player.location.c]
@@ -146,23 +145,23 @@ class numberRPG extends Phaser.Scene {
     for (var n = 0; n < neighbors.length; n++) {
       if (this.grid[neighbors[n].r][neighbors[n].c].name == 'Wall') {
         var tile = this.grid[neighbors[n].r][neighbors[n].c];
-       /* this.tweens.add({
-          targets: [tile.tileSprite, tile.tileText],
-          scale: 2,
-          duration: 100,
-          yoyo: true,
-          onYoyoScope: this,
-          onYoyo: function() {*/
-          tile.name = '';
-       tile.isEmpty = true
-       tile.tileValue = 0;
-       tile.tileText.setText('');
-       tile.tileBack.setAlpha(0);
-       tile.tileText.setTint(this.colors.tileEmpty);
-       tile.tileSprite.setTint(this.colors.tileEmpty);
+        /* this.tweens.add({
+           targets: [tile.tileSprite, tile.tileText],
+           scale: 2,
+           duration: 100,
+           yoyo: true,
+           onYoyoScope: this,
+           onYoyo: function() {*/
+        tile.name = '';
+        tile.isEmpty = true
+        tile.tileValue = 0;
+        tile.tileText.setText('');
+        tile.tileBack.setAlpha(0);
+        tile.tileText.setTint(this.colors.tileEmpty);
+        tile.tileSprite.setTint(this.colors.tileEmpty);
 
-       /*   }
-        })*/
+        /*   }
+         })*/
 
 
       }
@@ -190,8 +189,9 @@ class numberRPG extends Phaser.Scene {
     tile.tileText
   }
   roll() {
-    this.moveEnemies()
+
     var num = Phaser.Math.Between(4, this.range)
+    this.moveEnemies(num)
     this.currentRoll = num;
     this.tweens.add({
       targets: [this.nextSlot, this.nextNum],
@@ -210,14 +210,14 @@ class numberRPG extends Phaser.Scene {
   addPlayer() {
     //console.log(this.player)
     this.playerSprite.setPosition(this.xOffset + this.player.location.c * (this.tileSize + 15) + this.tileSize / 2, this.yOffset + this.player.location.r * (this.tileSize + 15) + this.tileSize / 2)
-    
+
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setText(this.player.strength)
     this.playerGrid[this.player.location.r][this.player.location.c].tileText.setTint(this.colors.tileNormal)
     this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileNormal).setAlpha(1)
     this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(1)
     this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = false;
-    
-    
+
+
   }
   removePlayer() {
 
@@ -226,8 +226,8 @@ class numberRPG extends Phaser.Scene {
     this.playerGrid[this.player.location.r][this.player.location.c].tileBack.setAlpha(0)
     this.playerGrid[this.player.location.r][this.player.location.c].tileSprite.setTint(this.colors.tileEmpty).setAlpha(0)
     this.playerGrid[this.player.location.r][this.player.location.c].isEmpty = true;
-    
-   
+
+
   }
   removeTile(row, col) {
 
@@ -239,36 +239,72 @@ class numberRPG extends Phaser.Scene {
     this.grid[row][col].isEmpty = true;
     this.grid[row][col].name = '';
     this.grid[row][col].strength = 0;
+    this.t
   }
-  moveEnemies(){
-    var enemies = this.findEnemies();
-    if(enemies.length == 0){return}
-    for(var i = 0; i < enemies.length; i++){
-      var neighbors = this.getEmptyNeighbors(enemies[i])
-      if(neighbors.length > 0){
+  growMountains(times) {
+    var start = this.getEmptySpace();
+    console.log(start)
+    for (var m = 0; m < times; m++) {
+      var neighbors = this.getEmptyNeighbors(start)
+      if (neighbors.length > 0) {
         var rand = Phaser.Math.Between(0, neighbors.length - 1)
         //to tile
-        this.grid[neighbors[rand].r][neighbors[rand].c].tileValue = this.grid[enemies[i].r][enemies[i].c].tileValue
-        console.log(this.grid[enemies[i].r][enemies[i].c].strength)
-        this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setText(this.grid[enemies[i].r][enemies[i].c].strength)
-        this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setTint(this.colors.tileEnemy1)
-        this.grid[neighbors[rand].r][neighbors[rand].c].tileSprite.setTint(this.colors.tileEnemy1)
-        
-        this.grid[neighbors[rand].r][neighbors[rand].c].tileBack.setFrame(this.grid[enemies[i].r][enemies[i].c].backFrame).setAlpha(1)
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileValue = 0
+        this.grid[neighbors[rand].r][neighbors[rand].c].backFrame = 128
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setText('')
+        //this.grid[neighbors[rand].r][neighbors[rand].c].tileText.s
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileSprite.setTint(this.colors.tileWall)
+
+        this.grid[neighbors[rand].r][neighbors[rand].c].tileBack.setFrame(128).setAlpha(1)
         this.grid[neighbors[rand].r][neighbors[rand].c].isEmpty = false;
-        this.grid[neighbors[rand].r][neighbors[rand].c].name = this.grid[enemies[i].r][enemies[i].c].name
-        this.grid[neighbors[rand].r][neighbors[rand].c].strength = this.grid[enemies[i].r][enemies[i].c].strength
+        this.grid[neighbors[rand].r][neighbors[rand].c].name = 'Wall'
+        this.grid[neighbors[rand].r][neighbors[rand].c].strength = 0
 
-        this.removeTile(enemies[i].r, enemies[i].c)
-
+        //this.removeTile(enemies[i].r, enemies[i].c)
+        start = { r: neighbors[rand].r, c: neighbors[rand].c }
       }
     }
   }
-  getEmptyNeighbors(point){
+  moveEnemies(times) {
+    for (var m = 0; m < times; m++) {
+      var enemies = this.findEnemies();
+      if (enemies.length == 0) { return }
+      for (var i = 0; i < enemies.length; i++) {
+        var neighbors = this.getEmptyNeighbors(enemies[i])
+        if (neighbors.length > 0) {
+          var rand = Phaser.Math.Between(0, neighbors.length - 1)
+          //to tile
+          this.grid[neighbors[rand].r][neighbors[rand].c].tileValue = this.grid[enemies[i].r][enemies[i].c].tileValue
+          this.grid[neighbors[rand].r][neighbors[rand].c].backFrame = this.grid[enemies[i].r][enemies[i].c].backFrame
+          this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setText(this.grid[enemies[i].r][enemies[i].c].strength)
+          this.grid[neighbors[rand].r][neighbors[rand].c].tileText.setTint(this.colors.tileEnemy1)
+          this.grid[neighbors[rand].r][neighbors[rand].c].tileSprite.setTint(this.colors.tileEnemy1)
+
+          this.grid[neighbors[rand].r][neighbors[rand].c].tileBack.setFrame(this.grid[enemies[i].r][enemies[i].c].backFrame).setAlpha(1)
+          this.grid[neighbors[rand].r][neighbors[rand].c].isEmpty = false;
+          this.grid[neighbors[rand].r][neighbors[rand].c].name = this.grid[enemies[i].r][enemies[i].c].name
+          this.grid[neighbors[rand].r][neighbors[rand].c].strength = this.grid[enemies[i].r][enemies[i].c].strength
+
+          this.removeTile(enemies[i].r, enemies[i].c)
+          if(neighbors[rand.r] == this.player.location.r && neighbors[rand].c == this.player.location.c){
+            var tween = this.tweens.add({
+              targets: this.playerGrid[this.player.location.r][this.player.location.c].tileBack,
+              scale: 2,
+              yoyo: true,
+              duration: 200
+            })
+          }
+        }
+      }
+
+    }
+
+  }
+  getEmptyNeighbors(point) {
     var n = []
-    if(point.r - 1 > -1){
-      if(this.grid[point.r -1][point.c].isEmpty){
-        n.push({r: point.r - 1, c: point.c})
+    if (point.r - 1 > -1) {
+      if (this.grid[point.r - 1][point.c].isEmpty) {
+        n.push({ r: point.r - 1, c: point.c })
       }
     }
     if (point.r + 1 < this.rows) {
@@ -278,7 +314,7 @@ class numberRPG extends Phaser.Scene {
     }
     if (point.c - 1 > -1) {
       if (this.grid[point.r][point.c - 1].isEmpty) {
-        n.push({ r: point.r, c: point.c - 1})
+        n.push({ r: point.r, c: point.c - 1 })
       }
     }
     if (point.c + 1 < this.cols) {
@@ -288,25 +324,27 @@ class numberRPG extends Phaser.Scene {
     }
     return n
   }
-  findEnemies(){
+  findEnemies() {
     var enm = []
-    for(var r = 0; r < this.rows;r++){
-      for(var c = 0; c < this.cols;c++){
-        if(this.grid[r][c].name == 'Enemy 1' || this.grid[r][c].name == 'Enemy 2' || this.grid[r][c].name == 'Enemy 3' || this.grid[r][c].name == 'Enemy 4'){
-          enm.push({r: r, c: c})
+    for (var r = 0; r < this.rows; r++) {
+      for (var c = 0; c < this.cols; c++) {
+        if (this.grid[r][c].name == 'Enemy 1' || this.grid[r][c].name == 'Enemy 2' || this.grid[r][c].name == 'Enemy 3' || this.grid[r][c].name == 'Enemy 4') {
+          enm.push({ r: r, c: c })
         }
       }
     }
     return enm
   }
   createGrid() {
-   
-	this.g = new Grid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
+
+    this.g = new Grid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
     this.grid = this.g.createGrid();
     this.pg = new playerGrid(this, this.cols, this.rows, this.tileSize, this.xOffset, this.yOffset)
     this.playerGrid = this.pg.createGrid();
+    this.growMountains(9)
+    this.growMountains(7)
     //this.addFeature()
-   /* this.upgradeMax = numberRPGData.upgradeMax;
+    /* this.upgradeMax = numberRPGData.upgradeMax;
     //this.fieldArray = [];
     // this.fieldGroup = this.add.group();
     // console.log('saveval ' + gridGameData.grid[2][2].value)
@@ -353,30 +391,30 @@ class numberRPG extends Phaser.Scene {
     }
 	*/
   }
-  addFeature(){
-  var forest =[[0,0], [0,-1],[0,1],[-1,0],[1,0]];
-  do{
-    var tiles = this.getValidShape(this.getEmptySpace())
-  }
-  while(tiles.length == 0)
-  
-	if(tiles.length > 0){
-    //console.log(tiles)
-		for(var i = 0; i < tiles.length; i++){
-      //this.grid[tiles[i].r][tiles[i].c].tileSprite.setTint(this.colors.tileTree)
-      this.grid[tiles[i].r][tiles[i].c].tileValue = 0;
-      this.grid[tiles[i].r][tiles[i].c].tileText.setText('')
-      this.grid[tiles[i].r][tiles[i].c].tileBack.setFrame(84).setAlpha(.8)
-      //this.grid[tiles[i].r][tiles[i].c].tileText.setTint(card.color)
-      this.grid[tiles[i].r][tiles[i].c].isEmpty = false;
-      this.grid[tiles[i].r][tiles[i].c].name = 'forest';
-      this.grid[tiles[i].r][tiles[i].c].strength = 0;
-
-
-
-
+  addFeature() {
+    var forest = [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]];
+    do {
+      var tiles = this.getValidShape(this.getEmptySpace())
     }
-	}
+    while (tiles.length == 0)
+
+    if (tiles.length > 0) {
+      //console.log(tiles)
+      for (var i = 0; i < tiles.length; i++) {
+        //this.grid[tiles[i].r][tiles[i].c].tileSprite.setTint(this.colors.tileTree)
+        this.grid[tiles[i].r][tiles[i].c].tileValue = 0;
+        this.grid[tiles[i].r][tiles[i].c].tileText.setText('')
+        this.grid[tiles[i].r][tiles[i].c].tileBack.setFrame(84).setAlpha(.8)
+        //this.grid[tiles[i].r][tiles[i].c].tileText.setTint(card.color)
+        this.grid[tiles[i].r][tiles[i].c].isEmpty = false;
+        this.grid[tiles[i].r][tiles[i].c].name = 'forest';
+        this.grid[tiles[i].r][tiles[i].c].strength = 0;
+
+
+
+
+      }
+    }
   }
   getValidShape(point) {
     var neigh = []
@@ -384,7 +422,7 @@ class numberRPG extends Phaser.Scene {
       if (this.inGrid(point.r + this.directions[d].r, point.c + this.directions[d].c) && this.grid[point.r + this.directions[d].r][point.r + this.directions[d].c].isEmpty) {
         neigh.push({ r: point.r + this.directions[d].r, c: point.c + this.directions[d].c })
       } else {
-      return false
+        return false
       }
     }
     neigh.push(point)
@@ -403,13 +441,15 @@ class numberRPG extends Phaser.Scene {
       var card = this.deck.pop()
       this.grid[coo.r][coo.c].tileValue = card.id;
       this.grid[coo.r][coo.c].tileText.setText(card.text)
-     this.grid[coo.r][coo.c].tileSprite.setTint(card.color)
-     this.grid[coo.r][coo.c].tileBack.setFrame(card.index).setAlpha(1)
+      this.grid[coo.r][coo.c].tileSprite.setTint(card.color)
+      this.grid[coo.r][coo.c].tileBack.setFrame(card.index).setAlpha(1)
       this.grid[coo.r][coo.c].tileText.setTint(card.color)
       this.grid[coo.r][coo.c].isEmpty = false;
       this.grid[coo.r][coo.c].name = card.name;
       this.grid[coo.r][coo.c].strength = card.strength;
       this.grid[coo.r][coo.c].backFrame = card.index;
+      //console.log('fr' + this.grid[coo.r][coo.c].backFrame);
+
       //this.grid[index].tileSprite.setTint(0x111111)
       added++;
     }
@@ -460,6 +500,8 @@ class numberRPG extends Phaser.Scene {
     //clear board
     this.clearGrid()
     this.makeDeck();
+    this.growMountains(9)
+    this.growMountains(7)
     this.addTiles(6);
     //shuffle deck
     //add tiles
@@ -480,11 +522,11 @@ class numberRPG extends Phaser.Scene {
         this.handleMove(0, -1);
       }
       if (swipeNormal.y > 0.8) {
-       // console.log('down')
+        // console.log('down')
         this.handleMove(1, 0);
       }
       if (swipeNormal.y < -0.8) {
-       // console.log('up')
+        // console.log('up')
         this.handleMove(-1, 0);
       }
     }
@@ -498,15 +540,16 @@ class numberRPG extends Phaser.Scene {
 
       var playerTile = this.grid[this.player.location.r][this.player.location.c]
       var playerTileNew = this.grid[this.player.location.r + deltaRow][this.player.location.c + deltaCol]
-      this.tileTypeText.setText(playerTileNew.name)
+     var mess = playerTileNew.name
+      this.events.emit('setMessage', mess)
       if (this.checkBlock(playerTileNew)) { return }
-      if (this.hasArrow){
+      if (this.hasArrow) {
         this.hasArrow = false;
         UIS.playerArrowText.setVisible(false)
         this.player.strength -= 1;
         this.updateStats();
       }
-      if(this.checkCollectable(playerTileNew)){
+      if (this.checkCollectable(playerTileNew)) {
         this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
       }
       if (this.checkEnemy(playerTileNew)) {
@@ -624,31 +667,31 @@ class numberRPG extends Phaser.Scene {
       onComplete: function() {
         var chance;
         //console.log('ps' + this.player.strength + ' es' + enemy.strength)
-        if(this.player.strength > enemy.strength){
+        if (this.player.strength > enemy.strength) {
           chance = 50 - (this.player.strength - enemy.strength)
-        } else if(this.player.strength < enemy.strength) {
-           chance = 50 + (enemy.strength - this.player.strength)
+        } else if (this.player.strength < enemy.strength) {
+          chance = 50 + (enemy.strength - this.player.strength)
         } else {
           chance = 50
         }
-       
-       
-       
-       
-       
+
+
+
+
+
         if (Phaser.Math.Between(0, 100) > chance) {
-         // this.player.strength += 1;
+          // this.player.strength += 1;
           this.currentRoll--;
           this.nextNum.setText(this.currentRoll)
           this.removePlayer()
-          this.removeTile( this.player.location.r + deltaRow, this.player.location.c + deltaCol)
+          this.removeTile(this.player.location.r + deltaRow, this.player.location.c + deltaCol)
           this.player.location.r += deltaRow;
           this.player.location.c += deltaCol;
           this.addPlayer()
 
         } else {
           this.player.health -= 1;
-          
+
         }
         this.updateStats();
         // this.currentRoll--;
@@ -695,6 +738,8 @@ class numberRPG extends Phaser.Scene {
       { name: 'Health', text: '#', id: 20, color: this.colors.tileHealth, strength: 0, index: 358 },
       { name: 'Coin', text: '$', id: 21, color: this.colors.tileCoin, strength: 0, index: 348 },
       { name: 'Coin', text: '$', id: 22, color: this.colors.tileCoin, strength: 0, index: 348 },
+      { name: 'Wizzard', text: '', id: 22, color: this.colors.tileCoin, strength: 0, index: 144 },
+    
     ]
     Phaser.Utils.Array.Shuffle(this.deck)
 

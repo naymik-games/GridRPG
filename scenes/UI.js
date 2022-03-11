@@ -15,7 +15,7 @@ class UI extends Phaser.Scene {
   
     this.header = this.add.image(game.config.width / 2, 10, 'blank').setOrigin(.5,0).setTint(0x000000).setAlpha(.4);
 	this.header.displayWidth = 900;
-	this.header.displayHeight = 150;
+	this.header.displayHeight = 200;
     
    
   this.score = 0;
@@ -38,6 +38,12 @@ class UI extends Phaser.Scene {
     this.playerArrowText = this.add.bitmapText(585, 75, 'topaz', '}->', 60).setOrigin(0, .5).setTint(0xecf0f1).setVisible(false);
 
 	
+	
+    //message text
+    this.tileTypeText = this.add.bitmapText(15, 150, 'topaz', 'message text', 60).setOrigin(0, .5).setTint(0xecf0f1);
+
+
+
 	//spell button
     this.remove = this.add.image(65, game.config.height - 25, 'blank').setInteractive().setTint(0xecf0f1).setOrigin(.5,1);
     this.remove.displayWidth = 100;
@@ -50,7 +56,10 @@ class UI extends Phaser.Scene {
 	
 	Main.events.on('updateStats', this.updateStats, this);
     
-  
+  Main.events.on('setMessage', function(data){
+    this.updateMessage(data)
+  }, this);
+ 
 
   }
   
@@ -64,6 +73,8 @@ class UI extends Phaser.Scene {
     this.playerMagicText.setText('@' + Main.player.magic);
     this.playerCoinText.setText('$' + Main.player.coins)
   }
-  
+  updateMessage(data){
+    this.tileTypeText.setText(data)
+  }
   
 }
